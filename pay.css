@@ -755,7 +755,7 @@ nav ul li a {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(180deg, rgba(7, 39, 67, 0.15) 0%, #072743 100%), url(images/image16.png) center / cover no-repeat; 
+    background: linear-gradient(180deg, rgba(7, 39, 67, 0.15) 0%, #072743 100%), url(images/rob.png) center / cover no-repeat; 
     background-size: cover;
     
     background-position: center;
