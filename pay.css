@@ -768,6 +768,7 @@ nav ul li a {
 
 .hero-content {
     padding: 20px;
+    padding-top: 40px;
     background-color: rgba(0, 0, 0, 0.01); /* Semi-transparent overlay */
 }
 
