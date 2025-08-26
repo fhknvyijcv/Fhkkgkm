@@ -809,7 +809,7 @@ h1 {
 .ai-image {
     flex: 1;
     min-height: 400px;
-    background-image: url('your-ai-image.jpg'); /* Replace with the actual image path */
+    background-image: url('images/rob.png'); /* Replace with the actual image path */
     background-size: cover;
     background-position: center;
     border-radius: 10px;
