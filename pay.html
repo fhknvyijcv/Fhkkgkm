@@ -557,121 +557,158 @@
         btn.addEventListener('mouseleave', () => btn.style.transform = '');
       });
 
-      // Inline waitlist form (URL-encoded POST to avoid preflight)
-      (function initInlineWaitlist() {
-        const form = q('#inlineWaitlistForm');
-        if (!form) return;
-        const btn = q('#joinBtn');
-        const successMsg = q('#inlineSuccess');
-        const errorMsg = q('#inlineError');
-        const emailInput = form.querySelector('input[name="email"]');
+     // Inline waitlist form (URL-encoded POST to avoid preflight)
+(function initInlineWaitlist() {
+  const form = q('#inlineWaitlistForm');
+  if (!form) return;
+  const btn = q('#joinBtn');
+  const successMsg = q('#inlineSuccess');
+  const errorMsg = q('#inlineError');
+  const emailInput = form.querySelector('input[name="email"]');
 
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          successMsg && successMsg.classList.add('hidden');
-          errorMsg && errorMsg.classList.add('hidden');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    successMsg && successMsg.classList.add('hidden');
+    errorMsg && errorMsg.classList.add('hidden');
 
-          const email = emailInput ? emailInput.value.trim() : '';
-          if (!isValidEmail(email)) {
-            if (emailInput) {
-              emailInput.style.borderColor = '#EF4444';
-              emailInput.placeholder = 'Please enter a valid email';
-              setTimeout(() => { emailInput.style.borderColor = ''; emailInput.placeholder = 'Fill your email'; }, 3000);
-            }
-            return;
-          }
+    const email = emailInput ? emailInput.value.trim() : '';
+    if (!isValidEmail(email)) {
+      if (emailInput) {
+        emailInput.style.borderColor = '#EF4444';
+        emailInput.placeholder = 'Please enter a valid email';
+        setTimeout(() => { emailInput.style.borderColor = ''; emailInput.placeholder = 'Fill your email'; }, 3000);
+      }
+      return;
+    }
 
-          const params = new URLSearchParams({
-            type: 'waitlist',
-            email,
-            page: 'pay',
-            timestamp: new Date().toISOString()
-          });
+    const params = new URLSearchParams({
+      type: 'waitlist',
+      email,
+      page: 'pay',
+      timestamp: new Date().toISOString()
+    });
 
-          btn && (btn.disabled = true);
-          btn && (btn.textContent = 'Joining...');
+    btn && (btn.disabled = true);
+    btn && (btn.textContent = 'Joining...');
 
-          try {
-            const res = await fetch(WEB_APP_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-              body: params.toString(),
-              redirect: 'follow'
-            });
+    try {
+      // NOTE: do not explicitly set Content-Type header here — let the browser set it for URLSearchParams
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: params.toString(),
+        redirect: 'follow'
+      });
 
-            let data = null;
-            try { data = await res.json(); } catch(_) { data = null; }
+      // read raw response text and try to parse JSON
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch (_) { data = null; }
 
-            if (res.ok && (data === null || data.success)) {
-              form.reset();
-              successMsg && successMsg.classList.remove('hidden');
-              setTimeout(() => successMsg && successMsg.classList.add('hidden'), 3000);
-              btn && (btn.textContent = 'Joined!');
+      console.log('Waitlist response:', res.status, text, data);
+
+      if (res.status >= 200 && res.status < 300) {
+        // treat as success even if server returned non-JSON body
+        form.reset();
+        successMsg && successMsg.classList.remove('hidden');
+        setTimeout(() => successMsg && successMsg.classList.add('hidden'), 3000);
+        btn && (btn.textContent = 'Joined!');
+      } else {
+        const msg = (data && data.error) ? data.error : (text || 'Server rejected waitlist');
+        errorMsg && (errorMsg.textContent = '❌ ' + msg);
+        errorMsg && errorMsg.classList.remove('hidden');
+        throw new Error(msg);
+      }
+    } catch (err) {
+      console.error('Waitlist submit error', err);
+      errorMsg && (errorMsg.textContent = '❌ Could not join waitlist. Please try again later.');
+      errorMsg && errorMsg.classList.remove('hidden');
+      setTimeout(() => errorMsg && errorMsg.classList.add('hidden'), 4000);
+    } finally {
+      btn && (btn.disabled = false);
+      btn && (btn.textContent = 'Join waitlist');
+    }
+  });
+})();
+// Payment form handler - posts to server then redirects to payment URL (from button's data-pay-url)
+(function initPaymentForm() {
+  const form = q('.payment-form');
+  if (!form) return;
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const submitter = e.submitter;
+    const plan = submitter && submitter.value ? submitter.value : 'one_time';
+    const payUrl = submitter && submitter.dataset && submitter.dataset.payUrl ? submitter.dataset.payUrl : null;
+    const courseEl = q('#course-select');
+    const referrerEl = q('#referrer-input');
+    const course = courseEl ? courseEl.value : '';
+    const referrer = referrerEl ? referrerEl.value.trim() || 'none' : 'none';
+
+    if (!course) {
+      alert('⚠️ Please select a field first.');
+      return;
+    }
+
+    const params = new URLSearchParams({ course, referrer, plan });
+
+    try {
+      if (submitter) { submitter.disabled = true; submitter.textContent = 'Processing...'; }
+
+      // NOTE: let the browser set the Content-Type for URLSearchParams (do NOT set custom headers)
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: params.toString(),
+        redirect: 'follow'
+      });
+
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch(_) { data = null; }
+
+      console.log('Payment response:', res.status, text, data);
+
+      if (res.status >= 200 && res.status < 300) {
+        // show referral feedback if returned
+        if (data && typeof data.referralCount !== 'undefined') {
+          const statusBox = document.getElementById('referralStatus');
+          if (statusBox) {
+            statusBox.style.display = 'block';
+            const count = Number(data.referralCount || 0);
+            const eligible = !!data.eligible;
+            if (eligible) {
+              statusBox.style.color = '#064E3B';
+              statusBox.innerHTML = `🎉 ${referrer} has ${count} paid referrals — eligible for internship!`;
             } else {
-              throw new Error('Server rejected waitlist');
+              const remaining = Math.max(0, 5 - count);
+              statusBox.style.color = '#065f46';
+              statusBox.innerHTML = `${referrer} has ${count} paid referral(s). ${remaining} more to secure internship.`;
             }
-          } catch (err) {
-            console.error('Waitlist submit error', err);
-            errorMsg && (errorMsg.textContent = '❌ Could not join waitlist. Please try again later.');
-            errorMsg && errorMsg.classList.remove('hidden');
-            setTimeout(() => errorMsg && errorMsg.classList.add('hidden'), 4000);
-          } finally {
-            btn && (btn.disabled = false);
-            btn && (btn.textContent = 'Join waitlist');
           }
-        });
-      })();
+        }
 
-      // Payment form handler - posts to server then redirects to payment URL (from button's data-pay-url)
-      (function initPaymentForm() {
-        const form = q('.payment-form');
-        if (!form) return;
-        form.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          const submitter = e.submitter;
-          const plan = submitter && submitter.value ? submitter.value : 'one_time';
-          const payUrl = submitter && submitter.dataset && submitter.dataset.payUrl ? submitter.dataset.payUrl : null;
-          const courseEl = q('#course-select');
-          const referrerEl = q('#referrer-input');
-          const course = courseEl ? courseEl.value : '';
-          const referrer = referrerEl ? referrerEl.value.trim() || 'none' : 'none';
-
-          if (!course) {
-            alert('⚠️ Please select a field first.');
-            return;
-          }
-
-          const params = new URLSearchParams({ course, referrer, plan });
-
-          try {
-            const res = await fetch(WEB_APP_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-              body: params.toString(),
-              redirect: 'follow'
-            });
-
-            let data = null;
-            try { data = await res.json(); } catch(_) { data = null; }
-
-            if (res.ok && (data === null || data.success)) {
-              // success: redirect to payment gateway if URL provided
-              if (payUrl) {
-                // small delay to let the server commit row before redirecting
-                setTimeout(() => { window.location.href = payUrl; }, 300);
-              } else {
-                alert('✅ Payment info saved. Proceed to checkout/payment gateway.');
-                form.reset();
-              }
-            } else {
-              alert('❌ Error saving payment info. Try again.');
-            }
-          } catch (err) {
-            console.error('Payment submit error', err);
-            alert('❌ Network error. Please try again.');
-          }
-        });
-      })();
+        // success: redirect to payment gateway if URL provided
+        if (payUrl) {
+          // small delay to let the server commit row before redirecting
+          setTimeout(() => { window.location.href = payUrl; }, 300);
+        } else {
+          alert('✅ Payment info saved. Proceed to checkout/payment gateway.');
+          form.reset();
+        }
+      } else {
+        const msg = (data && data.error) ? data.error : (text || 'Server rejected payment');
+        alert('❌ ' + msg);
+      }
+    } catch (err) {
+      console.error('Payment submit error', err);
+      alert('❌ Network error. Please try again.');
+    } finally {
+      if (submitter) {
+        submitter.disabled = false;
+        // restore original text if present
+        submitter.textContent = submitter.getAttribute('data-original-text') || (submitter.value || 'Pay');
+      }
+    }
+  });
+})();
 
       // Referrer autocomplete (debounced placeholder - no external endpoint provided)
       (function initReferrerAutocomplete() {
