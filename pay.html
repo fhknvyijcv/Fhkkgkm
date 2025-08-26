@@ -630,14 +630,44 @@
   });
 })();
 // Payment form handler - posts to server then redirects to payment URL (from button's data-pay-url)
+// This version detects inline onclick="window.location.href='...'" on buttons, extracts the URL,
+// moves it into data-pay-url, removes the inline onclick (so navigation doesn't happen immediately),
+// then performs the POST and redirects only after the server confirms.
 (function initPaymentForm() {
   const form = q('.payment-form');
   if (!form) return;
+
+  // 1) Find buttons with inline onclick that assigns location.href and migrate URL to data-pay-url
+  //    This prevents immediate navigation caused by inline onclick.
+  const clickableButtons = Array.from(form.querySelectorAll('button[onclick], input[onclick]'));
+  clickableButtons.forEach(btn => {
+    try {
+      const onclickSrc = btn.getAttribute('onclick') || '';
+      // match patterns like: window.location.href='https://paystack.shop/..' or location.href="..."
+      const m = onclickSrc.match(/(?:window\.)?location\.href\s*=\s*['"]([^'"]+)['"]/i);
+      if (m && m[1]) {
+        btn.dataset.payUrl = m[1];
+        // remove inline onclick so click doesn't navigate away immediately
+        btn.removeAttribute('onclick');
+      }
+    } catch (err) {
+      // ignore parse errors
+      console.warn('Could not migrate onclick for button', btn, err);
+    }
+  });
+
+  // store original button text for restore
+  (Array.from(form.querySelectorAll('.order-btn, .order-btn-outline'))).forEach(b => {
+    b.setAttribute('data-original-text', b.textContent.trim());
+  });
+
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
     const submitter = e.submitter;
     const plan = submitter && submitter.value ? submitter.value : 'one_time';
-    const payUrl = submitter && submitter.dataset && submitter.dataset.payUrl ? submitter.dataset.payUrl : null;
+    // prefer dataset.payUrl (possibly migrated from onclick), fallback to data-pay-url attr
+    const payUrl = (submitter && (submitter.dataset && submitter.dataset.payUrl)) ? submitter.dataset.payUrl :
+                   (submitter && submitter.getAttribute && submitter.getAttribute('data-pay-url')) ? submitter.getAttribute('data-pay-url') : null;
     const courseEl = q('#course-select');
     const referrerEl = q('#referrer-input');
     const course = courseEl ? courseEl.value : '';
@@ -653,7 +683,7 @@
     try {
       if (submitter) { submitter.disabled = true; submitter.textContent = 'Processing...'; }
 
-      // NOTE: let the browser set the Content-Type for URLSearchParams (do NOT set custom headers)
+      // Let the browser set Content-Type for URLSearchParams (no custom headers)
       const res = await fetch(WEB_APP_URL, {
         method: 'POST',
         body: params.toString(),
@@ -703,7 +733,6 @@
     } finally {
       if (submitter) {
         submitter.disabled = false;
-        // restore original text if present
         submitter.textContent = submitter.getAttribute('data-original-text') || (submitter.value || 'Pay');
       }
     }
