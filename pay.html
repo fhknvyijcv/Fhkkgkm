@@ -482,411 +482,261 @@
             </div>
         </div>
     </footer>
+   <script>
+    /* ---------- CONFIG: set to your Apps Script Web App URL ---------- */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyEWzY7Qgs7wq9pD6OzkZj4oS71LWdAxDcUgQQyAR_QxvFCQCz8_d3wtN_8dX4UtmjU/exec';
+    /* --------------------------------------------------------------- */
 
-    <script>
-        // FAQ Toggle Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const faqItems = document.querySelectorAll('.faq-item');
-    
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        
-        question.addEventListener('click', () => {
-            const isActive = item.classList.contains('active');
-            
-            // Close all other FAQ items
-            faqItems.forEach(otherItem => {
-                if (otherItem !== item) {
-                    otherItem.classList.remove('active');
-                }
-            });
-            
-            // Toggle current item
-            if (isActive) {
-                item.classList.remove('active');
-            } else {
-                item.classList.add('active');
-            }
+    document.addEventListener('DOMContentLoaded', () => {
+      const q = sel => document.querySelector(sel);
+      const qa = sel => Array.from(document.querySelectorAll(sel));
+      const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+      // FAQ - event delegation
+      const faqContainer = q('.faq-list') || document.body;
+      faqContainer.addEventListener('click', (e) => {
+        const qEl = e.target.closest('.faq-question');
+        if (!qEl) return;
+        const item = qEl.closest('.faq-item');
+        faqContainer.querySelectorAll('.faq-item.active').forEach(i => {
+          if (i !== item) i.classList.remove('active');
         });
-    });
-});
-
-// Smooth scrolling for navigation links (only for anchor links)
-document.addEventListener('DOMContentLoaded', function() {
-    const navLinks = document.querySelectorAll('.nav-links a');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const targetId = this.getAttribute('href');
-            if (targetId && targetId.startsWith('#')) {
-                e.preventDefault();
-                const targetSection = document.querySelector(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            }
-            // Otherwise, let the browser handle normal navigation
-        });
-    });
-});
-
-// Google Sheets endpoints (replace with your deployed Apps Script web app URLs)
-const GOOGLE_SHEETS_WAITLIST_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzT_1u5Sm9vVRhDsEv97CgzFIDIJj0dmacu0LDSQuYUB1WOy2oh-yk-611GHLyG17y8/exec';
-const GOOGLE_SHEETS_ORDERS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzT_1u5Sm9vVRhDsEv97CgzFIDIJj0dmacu0LDSQuYUB1WOy2oh-yk-611GHLyG17y8/exec';
-
-// Form submission handling (Waitlist -> Google Sheets)
-document.addEventListener('DOMContentLoaded', function() {
-    const waitlistForm = document.querySelector('.waitlist-form');
-    const emailInput = document.querySelector('.email-input');
-    const joinBtn = document.querySelector('.join-btn');
-    const successBox = document.getElementById('inlineSuccess');
-    const errorBox = document.getElementById('inlineError');
-    
-    if (waitlistForm) {
-        joinBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const email = emailInput.value.trim();
-            
-            if (!email || !isValidEmail(email)) {
-                emailInput.style.borderColor = '#EF4444';
-                emailInput.placeholder = 'Please enter a valid email';
-                setTimeout(() => {
-                    emailInput.style.borderColor = '';
-                    emailInput.placeholder = 'Fill your email';
-                }, 3000);
-                return;
-            }
-
-            try {
-                joinBtn.textContent = 'Joining...';
-                joinBtn.disabled = true;
-
-                const res = await fetch(GOOGLE_SHEETS_WAITLIST_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'waitlist',
-                        email: email,
-                        page: 'pay',
-                        timestamp: new Date().toISOString()
-                    })
-                });
-
-                if (!res.ok) throw new Error('Network response was not ok');
-
-                emailInput.value = '';
-                if (successBox) {
-                    successBox.classList.remove('hidden');
-                    setTimeout(() => successBox.classList.add('hidden'), 3000);
-                }
-                joinBtn.textContent = 'Joined!';
-                joinBtn.style.background = '#10B981';
-                setTimeout(() => {
-                    joinBtn.textContent = 'Join waitlist';
-                    joinBtn.disabled = false;
-                    joinBtn.style.background = '';
-                }, 1500);
-            } catch (err) {
-                if (errorBox) {
-                    errorBox.textContent = '❌ Could not join waitlist. Please try again later.';
-                    errorBox.classList.remove('hidden');
-                    setTimeout(() => errorBox.classList.add('hidden'), 3000);
-                }
-                joinBtn.textContent = 'Join waitlist';
-                joinBtn.disabled = false;
-                joinBtn.style.background = '';
-            }
-        });
-    }
-});
-
-// Email validation helper
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-// Button hover effects and interactions
-document.addEventListener('DOMContentLoaded', function() {
-    const buttons = document.querySelectorAll('button');
-    
-    buttons.forEach(button => {
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-        });
-        
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = '';
-        });
-    });
-});
-
-// Intersection Observer for animations
-document.addEventListener('DOMContentLoaded', function() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-    
-    // Observe elements for animation
-    const animatedElements = document.querySelectorAll('.benefit-card, .testimonial-card, .pricing-card');
-    
-    animatedElements.forEach(element => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(element);
-    });
-});
-
-// Header scroll effect
-document.addEventListener('DOMContentLoaded', function() {
-    const header = document.querySelector('.header');
-    const aiSection = document.querySelector('.ai-section');
-
-    function updateHeader() {
-        const threshold = aiSection ? (aiSection.offsetTop + aiSection.offsetHeight) : 600;
-        if (window.scrollY >= threshold) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-    }
-
-    window.addEventListener('scroll', updateHeader);
-    // run on load
-    updateHeader();
-});
-
-// Referral functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const referrerInput = document.getElementById('referrer-input');
-    const noneBtn = document.getElementById('none-btn');
-    const datalist = document.getElementById('referrer-suggestions');
-    
-    if (referrerInput && noneBtn) {
-        // Handle "None" button click
-        noneBtn.addEventListener('click', function() {
-            referrerInput.value = 'none';
-        });
-        
-        // Handle input changes for autocomplete
-        let searchTimeout;
-        referrerInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            
-            // Clear previous timeout
-            clearTimeout(searchTimeout);
-            
-            // Don't search if query is too short or is "none"
-            if (query.length < 2 || query.toLowerCase() === 'none') {
-                return;
-            }
-            
-            // Debounce the search
-            searchTimeout = setTimeout(() => {
-                fetch(`#`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Clear existing options except "none"
-                        const existingOptions = datalist.querySelectorAll('option:not([value="none"])');
-                        existingOptions.forEach(option => option.remove());
-                        
-                        // Add new suggestions
-                        (data && data.suggestions ? data.suggestions : []).forEach(suggestion => {
-                            const option = document.createElement('option');
-                            option.value = suggestion.name;
-                            option.textContent = suggestion.name;
-                            datalist.appendChild(option);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error searching referrers:', error);
-                    });
-            }, 300);
-        });
-        
-        // Handle form submission validation
-        const form = document.querySelector('.payment-form');
-        if (form) {
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const course = document.getElementById('course-select').value;
-                const referrer = document.getElementById('referrer-input').value.trim() || 'none';
-                const plan = e.submitter.value; // which button clicked: one_time or installment
-
-                if (!course) {
-                    alert('⚠️ Please select a field first.');
-                    return;
-                }
-
-                try {
-                    const res = await fetch(GOOGLE_SHEETS_ORDERS_ENDPOINT, {
-                        method: 'POST',
-                        body: JSON.stringify({ course, referrer, plan })
-                    });
-
-                    if (res.ok) {
-                        alert('✅ Payment info saved. Proceed to checkout/payment gateway.');
-                        paymentForm.reset();
-                    } else {
-                        alert('❌ Error saving payment info. Try again.');
-                    }
-                } catch (err) {
-                    alert('❌ Network error. Please try again.');
-                }
-            });
-        }
-        
-        // Add visual feedback for input focus
-        referrerInput.addEventListener('focus', function() {
-            this.style.borderColor = '#007bff';
-            this.style.boxShadow = '0 0 0 0.2rem rgba(0, 123, 255, 0.25)';
-        });
-        
-        referrerInput.addEventListener('blur', function() {
-            this.style.borderColor = '#dee2e6';
-            this.style.boxShadow = 'none';
-        });
-        
-        // Handle "None" button hover effects
-        noneBtn.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#5a6268';
-        });
-        
-        noneBtn.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '#6c757d';
-        });
-    }
-});
-    </script>
-  
-<script>
-(function(){
-  const form = document.getElementById('inlineWaitlistForm');
-  const btn = document.getElementById('joinBtn');
-  const emailInput = form.querySelector('input[name="email"]');
-  const successMsg = document.getElementById('inlineSuccess');
-  const errorMsg = document.getElementById('inlineError');
-
-  // Replace with your Google Apps Script Web App URL
-  const ENDPOINT = "YOUR_WEB_APP_URL";
-
-  function safeJson(res){
-    return res.text().then(t => {
-      try { return JSON.parse(t); } catch(e){ return null; }
-    });
-  }
-
-  form.addEventListener('submit', async function(e){
-    e.preventDefault();
-
-    // hide previous messages
-    successMsg.classList.add('hidden');
-    errorMsg.classList.add('hidden');
-
-    // create FormData BEFORE disabling inputs (disabled fields are NOT sent)
-    const formData = new FormData(form);
-
-    // ui: loading
-    btn.classList.add('loading');
-    btn.disabled = true;
-    emailInput.disabled = true;
-
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        item.classList.toggle('active');
       });
 
-      const data = await safeJson(res);
-
-      if (res.ok && data && data.success) {
-        successMsg.classList.remove('hidden');
-        form.reset();
-
-        // auto-hide success after 3s
-        setTimeout(() => successMsg.classList.add('hidden'), 3000);
-      } else {
-        // show backend field errors or generic message
-        if (data && data.errors) {
-          if (typeof data.errors === 'object') {
-            const msgs = [];
-            for (const k in data.errors) {
-              const v = data.errors[k];
-              if (Array.isArray(v)) msgs.push(v.join(' '));
-              else msgs.push(String(v));
-            }
-            errorMsg.innerText = '❌ ' + msgs.join(' ');
-          } else {
-            errorMsg.innerText = '❌ ' + String(data.errors);
+      // Smooth scroll for anchor links
+      qa('.nav-links a').forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          if (href && href.startsWith('#')) {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
-        } else if (!res.ok && !data) {
-          errorMsg.innerText = '❌ Server error. Please try again later.';
-        } else {
-          errorMsg.innerText = '❌ Something went wrong. Please check your input.';
-        }
-        errorMsg.classList.remove('hidden');
-      }
-    } catch (err) {
-      errorMsg.innerText = '❌ Network error. Please check your connection.';
-      errorMsg.classList.remove('hidden');
-    } finally {
-      // restore UI
-      btn.classList.remove('loading');
-      btn.disabled = false;
-      emailInput.disabled = false;
-    }
-  });
-})();
-</script>  
-<script>
-// Hamburger menu toggle
-document.addEventListener('DOMContentLoaded', function() {
-    const hamburger = document.getElementById('hamburger-btn');
-    const mobileNav = document.getElementById('mobile-nav');
-    let navOpen = false;
+        });
+      });
 
-    if (hamburger && mobileNav) {
-        hamburger.addEventListener('click', function() {
-            navOpen = !navOpen;
-            mobileNav.classList.toggle('open', navOpen);
-            hamburger.setAttribute('aria-expanded', navOpen ? 'true' : 'false');
-            mobileNav.setAttribute('aria-hidden', navOpen ? 'false' : 'true');
-            // Animate hamburger icon
-            if (navOpen) {
-                hamburger.classList.add('active');
-            } else {
-                hamburger.classList.remove('active');
+      // Intersection animations
+      (function initAnimatedElements() {
+        const animatedElements = qa('.benefit-card, .testimonial-card, .pricing-card');
+        if (!animatedElements.length) return;
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
             }
-        });
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-        // Close mobile nav on link click
-        mobileNav.querySelectorAll('a,button').forEach(link => {
-            link.addEventListener('click', function() {
-                navOpen = false;
-                mobileNav.classList.remove('open');
-                hamburger.setAttribute('aria-expanded', 'false');
-                mobileNav.setAttribute('aria-hidden', 'true');
-                hamburger.classList.remove('active');
-            });
+        animatedElements.forEach(el => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(20px)';
+          el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          observer.observe(el);
         });
-    }
-});
-</script>
+      })();
+
+      // Header scrolled state via IntersectionObserver (avoid scroll reflow)
+      (function initHeaderObserver() {
+        const header = q('.header');
+        const aiSection = q('.ai-section');
+        if (!header || !aiSection) return;
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) header.classList.remove('scrolled');
+            else header.classList.add('scrolled');
+          });
+        }, { root: null, threshold: 0, rootMargin: `-${header.offsetHeight}px 0px 0px 0px` });
+        observer.observe(aiSection);
+      })();
+
+      // button hover transform
+      qa('button').forEach(btn => {
+        btn.addEventListener('mouseenter', () => btn.style.transform = 'translateY(-2px)');
+        btn.addEventListener('mouseleave', () => btn.style.transform = '');
+      });
+
+      // Inline waitlist form (URL-encoded POST to avoid preflight)
+      (function initInlineWaitlist() {
+        const form = q('#inlineWaitlistForm');
+        if (!form) return;
+        const btn = q('#joinBtn');
+        const successMsg = q('#inlineSuccess');
+        const errorMsg = q('#inlineError');
+        const emailInput = form.querySelector('input[name="email"]');
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          successMsg && successMsg.classList.add('hidden');
+          errorMsg && errorMsg.classList.add('hidden');
+
+          const email = emailInput ? emailInput.value.trim() : '';
+          if (!isValidEmail(email)) {
+            if (emailInput) {
+              emailInput.style.borderColor = '#EF4444';
+              emailInput.placeholder = 'Please enter a valid email';
+              setTimeout(() => { emailInput.style.borderColor = ''; emailInput.placeholder = 'Fill your email'; }, 3000);
+            }
+            return;
+          }
+
+          const params = new URLSearchParams({
+            type: 'waitlist',
+            email,
+            page: 'pay',
+            timestamp: new Date().toISOString()
+          });
+
+          btn && (btn.disabled = true);
+          btn && (btn.textContent = 'Joining...');
+
+          try {
+            const res = await fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+              body: params.toString(),
+              redirect: 'follow'
+            });
+
+            let data = null;
+            try { data = await res.json(); } catch(_) { data = null; }
+
+            if (res.ok && (data === null || data.success)) {
+              form.reset();
+              successMsg && successMsg.classList.remove('hidden');
+              setTimeout(() => successMsg && successMsg.classList.add('hidden'), 3000);
+              btn && (btn.textContent = 'Joined!');
+            } else {
+              throw new Error('Server rejected waitlist');
+            }
+          } catch (err) {
+            console.error('Waitlist submit error', err);
+            errorMsg && (errorMsg.textContent = '❌ Could not join waitlist. Please try again later.');
+            errorMsg && errorMsg.classList.remove('hidden');
+            setTimeout(() => errorMsg && errorMsg.classList.add('hidden'), 4000);
+          } finally {
+            btn && (btn.disabled = false);
+            btn && (btn.textContent = 'Join waitlist');
+          }
+        });
+      })();
+
+      // Payment form handler - posts to server then redirects to payment URL (from button's data-pay-url)
+      (function initPaymentForm() {
+        const form = q('.payment-form');
+        if (!form) return;
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const submitter = e.submitter;
+          const plan = submitter && submitter.value ? submitter.value : 'one_time';
+          const payUrl = submitter && submitter.dataset && submitter.dataset.payUrl ? submitter.dataset.payUrl : null;
+          const courseEl = q('#course-select');
+          const referrerEl = q('#referrer-input');
+          const course = courseEl ? courseEl.value : '';
+          const referrer = referrerEl ? referrerEl.value.trim() || 'none' : 'none';
+
+          if (!course) {
+            alert('⚠️ Please select a field first.');
+            return;
+          }
+
+          const params = new URLSearchParams({ course, referrer, plan });
+
+          try {
+            const res = await fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+              body: params.toString(),
+              redirect: 'follow'
+            });
+
+            let data = null;
+            try { data = await res.json(); } catch(_) { data = null; }
+
+            if (res.ok && (data === null || data.success)) {
+              // success: redirect to payment gateway if URL provided
+              if (payUrl) {
+                // small delay to let the server commit row before redirecting
+                setTimeout(() => { window.location.href = payUrl; }, 300);
+              } else {
+                alert('✅ Payment info saved. Proceed to checkout/payment gateway.');
+                form.reset();
+              }
+            } else {
+              alert('❌ Error saving payment info. Try again.');
+            }
+          } catch (err) {
+            console.error('Payment submit error', err);
+            alert('❌ Network error. Please try again.');
+          }
+        });
+      })();
+
+      // Referrer autocomplete (debounced placeholder - no external endpoint provided)
+      (function initReferrerAutocomplete() {
+        const referrerInput = q('#referrer-input');
+        const datalist = q('#referrer-suggestions');
+        const noneBtn = q('#none-btn');
+        if (!referrerInput || !datalist) return;
+        noneBtn && noneBtn.addEventListener('click', () => referrerInput.value = 'none');
+
+        let timeout;
+        referrerInput.addEventListener('input', () => {
+          clearTimeout(timeout);
+          const query = referrerInput.value.trim();
+          if (query.length < 2 || query.toLowerCase() === 'none') return;
+          timeout = setTimeout(async () => {
+            try {
+              // placeholder endpoint; replace '#' with a real search URL when available
+              const resp = await fetch('#');
+              const payload = await resp.json();
+              datalist.querySelectorAll('option:not([value="none"])').forEach(opt => opt.remove());
+              (payload.suggestions || []).forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                datalist.appendChild(opt);
+              });
+            } catch (err) {
+              // ignore optional UX errors
+              console.warn('Referrer search failed', err);
+            }
+          }, 300);
+        });
+      })();
+
+      // Mobile nav
+      (function initMobileNav() {
+        const hamburger = q('#hamburger-btn');
+        const mobileNav = q('#mobile-nav');
+        if (!hamburger || !mobileNav) return;
+        let navOpen = false;
+        hamburger.addEventListener('click', () => {
+          navOpen = !navOpen;
+          mobileNav.classList.toggle('open', navOpen);
+          hamburger.setAttribute('aria-expanded', navOpen ? 'true' : 'false');
+          mobileNav.setAttribute('aria-hidden', navOpen ? 'false' : 'true');
+          hamburger.classList.toggle('active', navOpen);
+        });
+        mobileNav.querySelectorAll('a,button').forEach(link => {
+          link.addEventListener('click', () => {
+            navOpen = false;
+            mobileNav.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+            mobileNav.setAttribute('aria-hidden', 'true');
+            hamburger.classList.remove('active');
+          });
+        });
+      })();
+
+      // Console hint if hero image missing (helps debug 404)
+      (function checkHeroImage() {
+        const img = q('img[data-check="your-ai-image"]');
+        if (!img) return;
+        img.addEventListener('error', () => console.warn('Image not found — ensure correct path/case for images/your-ai-image.jpg'));
+      })();
+
+    }); // DOMContentLoaded
+    </script>
 </body>
 </html>
