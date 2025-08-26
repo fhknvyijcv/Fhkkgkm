@@ -628,46 +628,66 @@
       btn && (btn.textContent = 'Join waitlist');
     }
   });
-})();
-// Payment form handler - posts to server then redirects to payment URL (from button's data-pay-url)
-// This version detects inline onclick="window.location.href='...'" on buttons, extracts the URL,
-// moves it into data-pay-url, removes the inline onclick (so navigation doesn't happen immediately),
-// then performs the POST and redirects only after the server confirms.
+})();// Payment form handler - posts to server then redirects to payment URL (from button's data-pay-url)
+// Includes migration of inline onclick and robust handling for buttons that are type="button" (e.g. weekly)
 (function initPaymentForm() {
   const form = q('.payment-form');
   if (!form) return;
 
-  // 1) Find buttons with inline onclick that assigns location.href and migrate URL to data-pay-url
-  //    This prevents immediate navigation caused by inline onclick.
+  // 1) Migrate inline onclick="location.href='...'" into data-pay-url and remove onclick to avoid immediate navigation
   const clickableButtons = Array.from(form.querySelectorAll('button[onclick], input[onclick]'));
   clickableButtons.forEach(btn => {
     try {
       const onclickSrc = btn.getAttribute('onclick') || '';
-      // match patterns like: window.location.href='https://paystack.shop/..' or location.href="..."
       const m = onclickSrc.match(/(?:window\.)?location\.href\s*=\s*['"]([^'"]+)['"]/i);
       if (m && m[1]) {
         btn.dataset.payUrl = m[1];
-        // remove inline onclick so click doesn't navigate away immediately
         btn.removeAttribute('onclick');
       }
     } catch (err) {
-      // ignore parse errors
       console.warn('Could not migrate onclick for button', btn, err);
     }
   });
 
   // store original button text for restore
-  (Array.from(form.querySelectorAll('.order-btn, .order-btn-outline'))).forEach(b => {
-    b.setAttribute('data-original-text', b.textContent.trim());
+  const orderButtons = Array.from(form.querySelectorAll('.order-btn, .order-btn-outline'));
+  orderButtons.forEach(b => b.setAttribute('data-original-text', b.textContent.trim()));
+
+  // support browsers that don't set e.submitter: track last clicked button
+  let lastClickedBtn = null;
+
+  // Add click handler to order buttons so they submit the form as the "submitter"
+  orderButtons.forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      lastClickedBtn = btn;
+
+      // If the button is already type="submit", requestSubmit(btn) will submit with submitter.
+      // requestSubmit accepts an element and makes it the submitter in modern browsers.
+      if (typeof form.requestSubmit === 'function') {
+        try {
+          form.requestSubmit(btn);
+        } catch (err) {
+          // fallback to programmatic submit
+          form.submit();
+        }
+      } else {
+        // older browsers: call form.submit() — we'll pick up lastClickedBtn in submit handler
+        form.submit();
+      }
+    });
   });
 
+  // Actual form submit handler
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const submitter = e.submitter;
+
+    // prefer e.submitter (modern), otherwise use lastClickedBtn (fallback)
+    const submitter = (typeof e.submitter !== 'undefined' && e.submitter) ? e.submitter : lastClickedBtn;
     const plan = submitter && submitter.value ? submitter.value : 'one_time';
-    // prefer dataset.payUrl (possibly migrated from onclick), fallback to data-pay-url attr
-    const payUrl = (submitter && (submitter.dataset && submitter.dataset.payUrl)) ? submitter.dataset.payUrl :
+    const payUrl = (submitter && submitter.dataset && submitter.dataset.payUrl) ? submitter.dataset.payUrl :
                    (submitter && submitter.getAttribute && submitter.getAttribute('data-pay-url')) ? submitter.getAttribute('data-pay-url') : null;
+
     const courseEl = q('#course-select');
     const referrerEl = q('#referrer-input');
     const course = courseEl ? courseEl.value : '';
@@ -683,7 +703,7 @@
     try {
       if (submitter) { submitter.disabled = true; submitter.textContent = 'Processing...'; }
 
-      // Let the browser set Content-Type for URLSearchParams (no custom headers)
+      // Let the browser set the Content-Type for URLSearchParams (do NOT set custom headers)
       const res = await fetch(WEB_APP_URL, {
         method: 'POST',
         body: params.toString(),
@@ -735,9 +755,12 @@
         submitter.disabled = false;
         submitter.textContent = submitter.getAttribute('data-original-text') || (submitter.value || 'Pay');
       }
+      // reset lastClickedBtn so it doesn't leak to next submit
+      lastClickedBtn = null;
     }
   });
 })();
+
 
       // Referrer autocomplete (debounced placeholder - no external endpoint provided)
       (function initReferrerAutocomplete() {
