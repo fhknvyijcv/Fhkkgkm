@@ -5253,7 +5253,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-  @media (min-width: 48rem) {
+  @media (min-width: 55rem) {
     .md\:col-span-2 {
       grid-column: span 2 / span 2;
     }
