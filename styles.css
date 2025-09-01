@@ -5740,7 +5740,7 @@
     }
 
     .feature-card p {
-      width: 380px;
+     /* width: 380px;*/
       font-weight: 400;
       font-size: 14px;
       margin-top: 10px;
