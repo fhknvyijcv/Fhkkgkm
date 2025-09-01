@@ -569,7 +569,7 @@
         <div class="popup-content">
           <div class="popup-header">
             <h2 id="referTitle">🎉 Refer & Earn!</h2>
-            <p class="subtitle">Share Orbieon — earn ₦4,000 for every friend who signs up and pays</p>
+            <p class="subtitle">Share Orbieon — earn ₦3,000 for three friends who signs up (one-time payment) and pays</p>
           </div>
 
           <div class="popup-body">
@@ -577,8 +577,8 @@
               <div class="reward-item">
                 <span class="reward-icon">💰</span>
                 <div>
-                  <h3>Earn ₦4,000 per successful referral</h3>
-                  <p>When someone signs up using your name and completes payment, you get ₦4,000 credited to you.</p>
+                  <h3>Earn ₦3,000 per three successful referral</h3>
+                  <p>When three individuals signs up using your name and completes one-time payment, you get ₦3,000 credited to you.</p>
                 </div>
               </div>
             </div>
@@ -604,7 +604,7 @@
 
           <div class="popup-footer">
             <button id="startReferringBtn" class="primary-btn">Start Referring Now</button>
-            <p class="terms">You earn ₦4,000 for every five referred users who sign up and complete a payment. Payments will be verified before referral rewards are confirmed.</p>
+            <p class="terms">You earn ₦3,000 for every three referred users who sign up and complete a one-time payment. Payments will be verified before referral rewards are confirmed.</p>
           </div>
         </div>
       </div>
@@ -663,7 +663,7 @@
         }
         function getShareMessage() {
           const displayName = nameInput.value.trim() || 'my name';
-          return `Join Orbieon and level up your engineering skills — use referral name "${displayName}" when signing up. When you pay, the referrer earns ₦4,000. Sign up: ${getReferralUrl()}`;
+          return `Join Orbieon and level up your engineering skills — use referral name "${displayName}" when signing up. When the third person pay (one-time payment), the referrer earns ₦3,000. Sign up: ${getReferralUrl()}`;
         }
 
         function showPopup() {
@@ -736,7 +736,7 @@
             const pageRefEl = document.querySelector('#referrer-input');
             if (pageRefEl) pageRefEl.value = name || 'none';
           } catch(e){}
-          alert('Great — share your referral link and earn ₦4,000 for each friend who signs up and pays.');
+          alert('Great — share your referral link and earn ₦3,000 for three friends who signs up and pays(one-time payment).');
           hidePopup();
         });
 
