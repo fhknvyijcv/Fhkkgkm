@@ -230,7 +230,7 @@
 
       <!-- messages -->
       <div id="inlineSuccess" class="message success hidden" role="status">
-        🎉 Thanks — you're on the waitlist! Check your email for confirmation.
+        🎉 Thanks — you're on the waitlist!  
       </div>
       <div id="inlineError" class="message error hidden" role="alert"></div>
     </div>
@@ -238,7 +238,7 @@
 </section>
 
     <!-- Pricing Section -->
- 
+
  <section id="pricing-section" class="pricing-section">
       <div class="container">
         <h2 class="section-title">Pricing Plans</h2>
@@ -262,7 +262,12 @@
               <option value="mechatronics">Mechatronics & Robotics</option>
             </select>
           </div>
-
+ <div class="form-group" style="margin-bottom: 1.5rem; display: flex; align-items: center; cursor: pointer; justify-content: center;">
+    <input type="checkbox" id="kit-needed" name="kit-needed" value="Yes" style="margin-right: 0.75rem; width: 20px; height: 20px; cursor: pointer;">
+    <label for="kit-needed" style="font-size: 20px; color: #9b58f6; cursor: pointer; padding-top: 14px;">
+        I need a kit shipped to me 📦
+    </label>
+</div>
           <!-- Referral Section -->
           <div class="referral-section" style="margin-bottom: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border: 1px solid #dee2e6;">
             <h3 style="margin-bottom: 1rem; color: #495057; font-size: 1.1rem; font-weight: 600;">
@@ -694,13 +699,15 @@
     const referrerEl = q('#referrer-input');
     const course = courseEl ? courseEl.value : '';
     const referrer = referrerEl ? referrerEl.value.trim() || 'none' : 'none';
+    const kitNeededEl = q('#kit-needed');
+    const kitNeeded = kitNeededEl && kitNeededEl.checked ? kitNeededEl.value : 'No';
 
     if (!course) {
       alert('⚠️ Please select a field first.');
       return;
     }
 
-    const params = new URLSearchParams({ course, referrer, plan });
+    const params = new URLSearchParams({ course, referrer, plan,kit_needed: kitNeeded, });
 
     try {
       if (submitter) { submitter.disabled = true; submitter.textContent = 'Processing...'; }
@@ -728,11 +735,11 @@
             const eligible = !!data.eligible;
             if (eligible) {
               statusBox.style.color = '#064E3B';
-              statusBox.innerHTML = `🎉 ${referrer} has ${count} paid referrals — eligible for internship!`;
+              statusBox.innerHTML = `🎉 ${referrer} has ${count} paid referrals — eligible for payment!`;
             } else {
               const remaining = Math.max(0, 5 - count);
               statusBox.style.color = '#065f46';
-              statusBox.innerHTML = `${referrer} has ${count} paid referral(s). ${remaining} more to secure internship.`;
+              statusBox.innerHTML = `${referrer} has ${count} paid referral(s). ${remaining} more to secure payment.`;
             }
           }
         }
