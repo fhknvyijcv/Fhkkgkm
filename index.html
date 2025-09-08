@@ -105,6 +105,53 @@
                 Register</a>
         </div>
     </header>
+    <!-- Refer & Earn popup (inserted) -->
+    <div id="referPopupOverlay" class="popup-overlay" aria-hidden="true" role="dialog" aria-labelledby="referTitle" aria-modal="true" style="display:none;">
+      <div class="popup-container" role="document" aria-describedby="referDesc">
+        <button id="referCancelBtn" class="cancel-btn" aria-label="Close popup">&times;</button>
+        <div class="popup-content">
+          <div class="popup-header">
+            <h2 id="referTitle">🎉 Refer & Earn!</h2>
+            <p class="subtitle">Share Orbieon — earn ₦1,000 for each friend who signs up (one-time payment) and pays</p>
+          </div>
+
+          <div class="popup-body">
+            <div class="reward-info">
+              <div class="reward-item">
+                <span class="reward-icon">💰</span>
+                <div>
+                  <h3>Earn ₦1,000 per successful referral</h3>
+                  <p>When an individual signs up using your name (email preferred) and completes one-time payment, you get ₦1,000 credited to you.</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin:16px 0; text-align:center;">
+              <label for="referrerNamePopup" style="display:block; margin-bottom:8px; font-weight:600; color:#374151;">Your referral name (used by friends at signup)</label>
+              <input id="referrerNamePopup" type="text" placeholder="Enter your name (e.g. John Doe)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid #e6e6e6; font-size:14px;">
+              <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; align-items:center;">
+                <button id="copyRefBtn" class="share-btn" style="padding:8px 12px; border-radius:20px;">Copy link</button>
+                <span id="copyStatus" style="font-size:13px; color:#666; display:none;">Copied!</span>
+              </div>
+            </div>
+
+            <div class="share-options">
+              <p>Share with friends:</p>
+              <div class="share-buttons">
+                <button id="shareWhatsapp" class="share-btn whatsapp">WhatsApp</button>
+                <button id="shareEmail" class="share-btn email">Email</button>
+                <button id="shareSocial" class="share-btn social">Social / More</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="popup-footer">
+            <button id="startReferringBtn" class="primary-btn">Start Referring Now</button>
+            <p class="terms">You earn ₦1,000 for each referred user who sign up and complete a one-time payment. Payments will be verified before referral rewards are confirmed. Please use unique and easy means such as phone number(WhatsApp) or email</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="border-b border-gray-200"></div>
 
@@ -580,54 +627,7 @@
             </div>
         </div>
     </footer>
-     <!-- Refer & Earn popup (inserted) -->
-    <div id="referPopupOverlay" class="popup-overlay" aria-hidden="true" role="dialog" aria-labelledby="referTitle" aria-modal="true" style="display:none;">
-      <div class="popup-container" role="document" aria-describedby="referDesc">
-        <button id="referCancelBtn" class="cancel-btn" aria-label="Close popup">&times;</button>
-        <div class="popup-content">
-          <div class="popup-header">
-            <h2 id="referTitle">🎉 Refer & Earn!</h2>
-            <p class="subtitle">Share Orbieon — earn ₦1,000 for each friend who signs up (one-time payment) and pays</p>
-          </div>
-
-          <div class="popup-body">
-            <div class="reward-info">
-              <div class="reward-item">
-                <span class="reward-icon">💰</span>
-                <div>
-                  <h3>Earn ₦1,000 per successful referral</h3>
-                  <p>When an individual signs up using your name (email preferred) and completes one-time payment, you get ₦1,000 credited to you.</p>
-                </div>
-              </div>
-            </div>
-
-            <div style="margin:16px 0; text-align:center;">
-              <label for="referrerNamePopup" style="display:block; margin-bottom:8px; font-weight:600; color:#374151;">Your referral name (used by friends at signup)</label>
-              <input id="referrerNamePopup" type="text" placeholder="Enter your name (e.g. John Doe)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid #e6e6e6; font-size:14px;">
-              <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; align-items:center;">
-                <button id="copyRefBtn" class="share-btn" style="padding:8px 12px; border-radius:20px;">Copy link</button>
-                <span id="copyStatus" style="font-size:13px; color:#666; display:none;">Copied!</span>
-              </div>
-            </div>
-
-            <div class="share-options">
-              <p>Share with friends:</p>
-              <div class="share-buttons">
-                <button id="shareWhatsapp" class="share-btn whatsapp">WhatsApp</button>
-                <button id="shareEmail" class="share-btn email">Email</button>
-                <button id="shareSocial" class="share-btn social">Social / More</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="popup-footer">
-            <button id="startReferringBtn" class="primary-btn">Start Referring Now</button>
-            <p class="terms">You earn ₦1,000 for each referred user who sign up and complete a one-time payment. Payments will be verified before referral rewards are confirmed. Please use unique and easy means such as phone number(WhatsApp) or email</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
+ 
     <script>
         // Mobile menu toggle
         document.getElementById('mobile-menu-button').addEventListener('click', () => {
