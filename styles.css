@@ -6113,16 +6113,7 @@
         font-size: 14px;
     }
 
-    /* ✅ Make close button fixed on mobile */
-    .cancel-btn {
-        position: fixed;
-        top: 12px;
-        right: 12px;
-        z-index: 1100; /* higher than popup */
-        background: white;
-        border: 1px solid #ddd;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
+ 
 
     .cancel-btn:hover {
         background: #f9f9f9;
