@@ -5320,6 +5320,14 @@
       line-height: var(--tw-leading, var(--text-xl--line-height));
     }
   }
+    @media (min-width: 55rem) and (max-width: 60rem) {
+      .md\:hidden {
+      display: block;
+    }
+        .md\:flex {
+      display: none;
+    }
+  }
   @media (min-width: 64rem) {
     .lg\:col-span-3 {
       grid-column: span 3 / span 3;
