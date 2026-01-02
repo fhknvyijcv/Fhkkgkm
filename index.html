@@ -81,9 +81,6 @@
                     class="text-gray-600 hover:text-primary-purple transition-colors duration-200">Testimonials</a>
                 <a href="#contact"
                     class="text-gray-600 hover:text-primary-purple transition-colors duration-200">Contact</a>
-                         <!-- Refer & Earn trigger (added) -->
-                <a href="#" id="openReferLink" class="text-primary-purple" title="Refer & Earn">Refer & Earn</a>
-
                 <a href="pay.html"
                     class="px-4 py-2 bg-primary-purple text-white rounded-lg shadow-md hover:bg-primary-purple-dark transition-colors duration-200">Sign
                     In / Register</a>
@@ -101,60 +98,10 @@
             <a href="#how-it-works" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">How It Works</a>
             <a href="#testimonials" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Testimonials</a>
             <a href="#contact" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Contact</a>
-                     <!-- Refer & Earn trigger (added) -->
-                <a href="#" id="openReferLink" class="text-primary-purple" title="Refer & Earn">Refer & Earn</a>
-
             <a href="pay.html" class="block px-4 py-2 text-primary-purple hover:bg-gray-100 font-medium">Sign In /
                 Register</a>
         </div>
     </header>
-    <!-- Refer & Earn popup (inserted) -->
-    <div id="referPopupOverlay" class="popup-overlay" aria-hidden="true" role="dialog" aria-labelledby="referTitle" aria-modal="true" style="display:none;">
-      <div class="popup-container" role="document" aria-describedby="referDesc">
-        <button id="referCancelBtn" class="cancel-btn" aria-label="Close popup">&times;</button>
-        <div class="popup-content">
-          <div class="popup-header">
-            <h2 id="referTitle">🎉 Refer & Earn!</h2>
-            <p class="subtitle">Share Orbieon — earn ₦1,000 for each friend who signs up (one-time payment) and pays</p>
-          </div>
-
-          <div class="popup-body">
-            <div class="reward-info">
-              <div class="reward-item">
-                <span class="reward-icon">💰</span>
-                <div>
-                  <h3>Earn ₦1,000 per successful referral</h3>
-                  <p>When an individual signs up using your name (email preferred) and completes one-time payment, you get ₦1,000 credited to you.</p>
-                </div>
-              </div>
-            </div>
-
-            <div style="margin:16px 0; text-align:center;">
-              <label for="referrerNamePopup" style="display:block; margin-bottom:8px; font-weight:600; color:#374151;">Your referral name (used by friends at signup)</label>
-              <input id="referrerNamePopup" type="text" placeholder="Enter your name (e.g. John Doe)" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid #e6e6e6; font-size:14px;">
-              <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; align-items:center;">
-                <button id="copyRefBtn" class="share-btn" style="padding:8px 12px; border-radius:20px;">Copy link</button>
-                <span id="copyStatus" style="font-size:13px; color:#666; display:none;">Copied!</span>
-              </div>
-            </div>
-
-            <div class="share-options">
-              <p>Share with friends:</p>
-              <div class="share-buttons">
-                <button id="shareWhatsapp" class="share-btn whatsapp">WhatsApp</button>
-                <button id="shareEmail" class="share-btn email">Email</button>
-                <button id="shareSocial" class="share-btn social">Social / More</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="popup-footer">
-            <button id="startReferringBtn" class="primary-btn">Start Referring Now</button>
-            <p class="terms">You earn ₦1,000 for each referred user who sign up and complete a one-time payment. Payments will be verified before referral rewards are confirmed. Please use unique and easy means such as phone number(WhatsApp) or email</p>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="border-b border-gray-200"></div>
 
@@ -640,7 +587,7 @@
                     </a>
 
                 </div>
-                <p>Orbieon ©2025 - All rights reserved</p>
+                <p>Orbieon ©2026 - All rights reserved</p>
             </div>
         </div>
     </footer>
@@ -651,144 +598,6 @@
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
         });
-          // Refer & Earn logic
-      (function(){
-        const overlay = document.getElementById('referPopupOverlay');
-        const openLink = document.getElementById('openReferLink');
-        const cancelBtn = document.getElementById('referCancelBtn');
-        const copyBtn = document.getElementById('copyRefBtn');
-        const copyStatus = document.getElementById('copyStatus');
-        const whatsappBtn = document.getElementById('shareWhatsapp');
-        const emailBtn = document.getElementById('shareEmail');
-        const socialBtn = document.getElementById('shareSocial');
-        const startBtn = document.getElementById('startReferringBtn');
-        const nameInput = document.getElementById('referrerNamePopup');
-
-        // Try to prefill name from:
-        // 1) URL ?ref=Name
-        // 2) localStorage 'orbieon_ref'
-        // 3) a page-level referrer input if present (#referrer-input)
-        function readUrlParam(name) {
-          const url = new URL(window.location.href);
-          return url.searchParams.get(name);
-        }
-        function prefill() {
-          const urlRef = readUrlParam('ref');
-          if (urlRef && urlRef.trim()) {
-            nameInput.value = decodeURIComponent(urlRef.replace(/\+/g,' '));
-            return;
-          }
-          const stored = localStorage.getItem('orbieon_ref');
-          if (stored) { nameInput.value = stored; return; }
-          // If page has a referrer input (on pay.html), use its value
-          const pageRefEl = document.querySelector('#referrer-input');
-          if (pageRefEl && pageRefEl.value && pageRefEl.value.trim()) {
-            nameInput.value = pageRefEl.value.trim();
-          }
-        }
-
-        function getRefName() {
-          const raw = (nameInput && nameInput.value) ? nameInput.value.trim() : '';
-          return raw ? raw.replace(/\s+/g, '-').toLowerCase() : 'friend';
-        }
-        function getReferralUrl() {
-          // point people to pay.html so they can sign up and pay (makes tracking easier)
-          const ref = encodeURIComponent(getRefName());
-          return `${location.origin}/pay.html?ref=${ref}`;
-        }
-        function getShareMessage() {
-          const displayName = nameInput.value.trim() || 'my name';
-          return `Join Orbieon and level up your engineering skills — use referral name "${displayName}" when signing up. When the third person pay (one-time payment), the referrer earns ₦3,000. Sign up: ${getReferralUrl()}`;
-        }
-
-        function showPopup() {
-          overlay.style.display = 'flex';
-          overlay.classList.add('show');
-          overlay.setAttribute('aria-hidden','false');
-          document.body.style.overflow = 'hidden';
-        }
-        function hidePopup() {
-          overlay.style.display = 'none';
-          overlay.classList.remove('show');
-          overlay.setAttribute('aria-hidden','true');
-          document.body.style.overflow = '';
-        }
-
-        // Copy referral message
-        copyBtn.addEventListener('click', async () => {
-          const text = getShareMessage();
-          try {
-            await navigator.clipboard.writeText(text);
-            copyStatus.style.display = 'inline';
-            copyStatus.textContent = 'Copied!';
-            setTimeout(()=> copyStatus.style.display = 'none', 2000);
-          } catch (err) {
-            prompt('Copy this share message (Ctrl+C / ⌘C):', text);
-          }
-        });
-
-        // WhatsApp share
-        whatsappBtn.addEventListener('click', () => {
-          const msg = getShareMessage();
-          const wa = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-          window.open(wa, '_blank');
-        });
-
-        // Email share
-        emailBtn.addEventListener('click', () => {
-          const subject = 'Join Orbieon — learn & earn';
-          const body = getShareMessage();
-          const mail = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          window.location.href = mail;
-        });
-
-        // Social / Web Share API with fallback
-        socialBtn.addEventListener('click', async () => {
-          const url = getReferralUrl();
-          const text = getShareMessage();
-          if (navigator.share) {
-            try {
-              await navigator.share({ title: 'Orbieon — Refer & Earn', text, url });
-            } catch (err) {
-              console.warn('Share failed', err);
-            }
-          } else {
-            try {
-              await navigator.clipboard.writeText(text);
-              alert('Share message copied to clipboard! Paste it in any app to share.');
-            } catch (err) {
-              prompt('Copy this share message:', text);
-            }
-          }
-        });
-
-        // Start referring: save referral name to localStorage and copy into page referrer input if present
-        startBtn.addEventListener('click', () => {
-          const name = (nameInput.value || '').trim();
-          if (name) localStorage.setItem('orbieon_ref', name);
-          // if pay page has #referrer-input, set it
-          try {
-            const pageRefEl = document.querySelector('#referrer-input');
-            if (pageRefEl) pageRefEl.value = name || 'none';
-          } catch(e){}
-          alert('Great — share your referral link and earn ₦3,000 for three friends who signs up and pays(one-time payment).');
-          hidePopup();
-        });
-
-        // Open & close handlers
-        openLink.addEventListener('click', (ev) => { ev.preventDefault(); prefill(); showPopup(); });
-        cancelBtn.addEventListener('click', hidePopup);
-        overlay.addEventListener('click', (e) => {
-          const container = overlay.querySelector('.popup-container');
-          if (!container.contains(e.target)) hidePopup();
-        });
-        document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') hidePopup(); });
-
-        // Prefill now and auto-show after 2s
-        prefill();
-        window.addEventListener('load', () => { setTimeout(() => { prefill(); showPopup(); }, 2000); });
-
-      })();
     </script>
 </body>
 
